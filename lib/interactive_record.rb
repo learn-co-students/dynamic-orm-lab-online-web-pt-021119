@@ -43,7 +43,7 @@ class InteractiveRecord
 
     def self.find_by(att)
         sql="SELECT * FROM #{self.table_name} WHERE #{att.keys.first.to_s}=? LIMIT 1"
-        
+        DB[:conn].execute(sql,att.values.first.to_s)
     end
 
 end
