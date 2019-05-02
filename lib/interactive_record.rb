@@ -9,13 +9,11 @@ class InteractiveRecord
   end
 
   def self.column_names
-    DB[:conn].results_as_hash = true
-
     sql = "PRAGMA table_info('#{table_name}')"
     table_info = DB[:conn].execute(sql)
     columns = []
 
-    table_info.each {|c| columns << c["name"]}
+    table_info.each {|r| columns << r["name"]}
 
     columns.compact
   end
@@ -31,7 +29,7 @@ class InteractiveRecord
   end
 
   def col_names_for_insert
-    self.class.column_names.delete_if {|col| col == "id"}.join(", ")
+    self.class.column_names.delete_if {|c| c == "id"}.join(", ")
   end
 
   def values_for_insert
@@ -44,7 +42,7 @@ class InteractiveRecord
 
   def save
     sql = <<-SQL
-      INSERT INTO #{table_name}
+      INSERT INTO #{table_name_for_insert}
       (#{col_names_for_insert})
       VALUES
       (#{values_for_insert})
@@ -55,9 +53,24 @@ class InteractiveRecord
   end
 
   def self.find_by_name(name)
+    sql = <<-SQL
+      SELECT *
+      FROM #{table_name}
+      WHERE ? = ?
+    SQL
+
+    DB[:conn].execute(sql, name, name)
   end
 
-  def self.find_by(attribute)
-  end
+  def self.find_by(attribute_hash)
+      value = attribute_hash.values.first
+      formatted_value = value.class == Fixnum ? value : "'#{value}'"
+      sql = <<-SQL
+        SELECT *
+        FROM #{table_name}
+        WHERE #{attribute_hash.keys.first} = #{formatted_value}
+      SQL
+      DB[:conn].execute(sql)
+    end
 
 end
