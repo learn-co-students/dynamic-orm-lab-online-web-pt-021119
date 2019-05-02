@@ -35,6 +35,11 @@ class InteractiveRecord
   end
 
   def values_for_insert
+    values = []
+    self.class.column_names.each do |c|
+      values << "'#{send(c)}'" if c != "id"
+    end
+    values.join(", ")
   end
 
   def save
