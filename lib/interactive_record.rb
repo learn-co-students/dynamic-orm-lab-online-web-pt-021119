@@ -63,14 +63,12 @@ class InteractiveRecord
   end
 
   def self.find_by(attribute_hash)
-      value = attribute_hash.values.first
-      formatted_value = value.class == Fixnum ? value : "'#{value}'"
       sql = <<-SQL
         SELECT *
         FROM #{table_name}
-        WHERE #{attribute_hash.keys.first} = #{formatted_value}
+        WHERE #{attribute_hash.keys[0].to_s} = ?
       SQL
-      DB[:conn].execute(sql)
+      DB[:conn].execute(sql, attribute_hash.values[0])
     end
 
 end
